@@ -23,7 +23,7 @@ class ImageReader:
 
     def preprocess(self, img: np.ndarray) -> np.ndarray:
         (height, width) = img.shape[:2]
-        height, width = int(height * 2), int(width * 2)
+        height, width = int(height * 5), int(width * 5)
         img = cv2.resize(img, (width, height), interpolation=cv2.INTER_CUBIC)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         img = cv2.medianBlur(img, 3)
@@ -38,7 +38,7 @@ class ImageReader:
         return img
 
     def read_image(self, img: np.ndarray) -> str:
-        return pytesseract.image_to_string(image=img, config=self.config % ("rus+eng", 2, 1))
+        return pytesseract.image_to_string(image=img, lang='rus')
 
     def process_pdf(self):
         pdf_document = fitz.open(self.path)
