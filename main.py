@@ -3,12 +3,26 @@ import cv2
 import pytesseract
 from PIL import Image
 import numpy as np
+import os
+
+
+def process_all_pdfs(root_folder: str):
+    for root, dirs, files in os.walk(root_folder):
+        for file in files:
+            if file.endswith(".pdf"):
+                pdf_path = os.path.join(root, file).replace("\\","/")
+                text_path = pdf_path.replace("pdfs", "txts").replace(".pdf", ".txt")
+                reader = ImageReader(pdf_path)
+                text = reader.process_pdf()
+                with open(text_path, "w", encoding="utf-8") as text_file:
+                    text_file.write(text)
+                print(f"Text extracted from {pdf_path} and saved to {text_path}")
 
 
 class ImageReader:
     def __init__(self, path_to_pdf: str):
-        pytesseract.pytesseract.tesseract_cmd = r"C:/Program Files/Tesseract-OCR/tesseract.exe"
-        self.config = '--tessdata-dir "C:/Program Files/Tesseract-OCR/tessdata" -l %s --oem %d --psm %d'
+        pytesseract.pytesseract.tesseract_cmd = r"V:/Tesseract-OCR/tesseract.exe"
+        self.config = '--tessdata-dir "V:/Tesseract-OCRTesseract-OCR/tessdata" -l %s --oem %d --psm %d'
         self.path = path_to_pdf
 
     def correct_orientation(self, img: Image) -> np.ndarray:
@@ -38,22 +52,27 @@ class ImageReader:
         return img
 
     def read_image(self, img: np.ndarray) -> str:
-        return pytesseract.image_to_string(image=img, lang='rus')
+        return pytesseract.image_to_string(image=img, lang='rus+eng')
 
     def process_pdf(self):
+        text = ""
         pdf_document = fitz.open(self.path)
         for page_num in range(pdf_document.page_count):
             page = pdf_document.load_page(page_num)
-            pix = page.get_pixmap()
+            pix = page.get_pixmap(matrix=fitz.Matrix(2, 2))
             img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
-            img = self.correct_orientation(img)
+            try:
+                img = self.correct_orientation(img)
+            except:
+                print("BLANK")
+
             img = self.preprocess(np.array(img))
             img = self.noise_remove(img)
-            text = self.read_image(img)
-            print(f"Page {page_num + 1}:\n{text}\n")
+            text += self.read_image(img)
+            print(text)
+
+        return text
 
 
 if __name__ == '__main__':
-    reader = ImageReader(
-        "C:/Users/TUF/Downloads/«Общероссийское отраслевое объединение работодателей электроэнергетики»_812.pdf")
-    reader.process_pdf()
+    process_all_pdfs("V:/pdfs")
