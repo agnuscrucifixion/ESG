@@ -1,78 +1,46 @@
-import fitz
-import cv2
-import pytesseract
-from PIL import Image
-import numpy as np
 import os
+from pdf2image import convert_from_path
+import easyocr
+import nltk
+from nltk.tokenize import sent_tokenize
 
 
-def process_all_pdfs(root_folder: str):
-    for root, dirs, files in os.walk(root_folder):
-        for file in files:
-            if file.endswith(".pdf"):
-                pdf_path = os.path.join(root, file).replace("\\","/")
-                text_path = pdf_path.replace("pdfs", "txts").replace(".pdf", ".txt")
-                reader = ImageReader(pdf_path)
-                text = reader.process_pdf()
-                with open(text_path, "w", encoding="utf-8") as text_file:
-                    text_file.write(text)
-                print(f"Text extracted from {pdf_path} and saved to {text_path}")
+nltk.download('punkt')
 
 
-class ImageReader:
-    def __init__(self, path_to_pdf: str):
-        pytesseract.pytesseract.tesseract_cmd = r"V:/Tesseract-OCR/tesseract.exe"
-        self.config = '--tessdata-dir "V:/Tesseract-OCRTesseract-OCR/tessdata" -l %s --oem %d --psm %d'
-        self.path = path_to_pdf
+def split_into_sentences(text, language='russian'):
+    sentences = sent_tokenize(text, language=language)
+    return sentences
 
-    def correct_orientation(self, img: Image) -> np.ndarray:
-        res = pytesseract.image_to_osd(img, output_type=pytesseract.Output.DICT)
-        if res["orientation"] == 90:
-            img = img.transpose(Image.ROTATE_90)
-        elif res["orientation"] == 180:
-            img = img.transpose(Image.ROTATE_180)
-        elif res["orientation"] == 270:
-            img = img.transpose(Image.ROTATE_270)
-        return np.asarray(img)
 
-    def preprocess(self, img: np.ndarray) -> np.ndarray:
-        (height, width) = img.shape[:2]
-        height, width = int(height * 5), int(width * 5)
-        img = cv2.resize(img, (width, height), interpolation=cv2.INTER_CUBIC)
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        img = cv2.medianBlur(img, 3)
-        img = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
-        return img
+def format_paragraph(paragraph):
+    sentences = split_into_sentences(paragraph, language='russian')
+    formatted_paragraph = ' '.join(sentences)
+    return formatted_paragraph
 
-    def noise_remove(self, img: np.ndarray) -> np.ndarray:
-        img = cv2.bitwise_not(img)
-        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
-        img = cv2.erode(img, kernel, iterations=1)
-        img = cv2.dilate(img, kernel, iterations=1)
-        return img
 
-    def read_image(self, img: np.ndarray) -> str:
-        return pytesseract.image_to_string(image=img, lang='rus+eng')
+def to_png(name):
+    images = convert_from_path(name)
 
-    def process_pdf(self):
-        text = ""
-        pdf_document = fitz.open(self.path)
-        for page_num in range(pdf_document.page_count):
-            page = pdf_document.load_page(page_num)
-            pix = page.get_pixmap(matrix=fitz.Matrix(2, 2))
-            img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
-            try:
-                img = self.correct_orientation(img)
-            except:
-                print("BLANK")
+    for i, image in enumerate(images):
+        image_path = f'C:/Users/TUF/Desktop/jpg/page{i}.jpg'
+        image.save(image_path, 'JPEG')
+        print(f'Saved image: {image_path}')
 
-            img = self.preprocess(np.array(img))
-            img = self.noise_remove(img)
-            text += self.read_image(img)
-            print(text)
 
-        return text
-
+def process_images():
+    reader = easyocr.Reader(['ru', 'en'], gpu=True)
+    with open('output.txt', 'w', encoding='utf-8') as f:
+        sorted_list = sorted(os.listdir('C:/Users/TUF/Desktop/jpg'), key=lambda x: int(x.split('.')[0][4:]))
+        for filename in sorted_list:
+            if filename.endswith('.jpg'):
+                image_path = os.path.join('C:/Users/TUF/Desktop/jpg', filename)
+                result = reader.readtext(image_path, detail=0, paragraph=True)
+                print(image_path)
+                for paragraph in result:
+                    formatted_paragraph = format_paragraph(paragraph)
+                    f.write(formatted_paragraph + '\n\n')
 
 if __name__ == '__main__':
-    process_all_pdfs("V:/pdfs")
+    to_png('C:/Users/TUF/Desktop/pdf/ПАО «ММК» - Этот отчет распознавали разными библиотеками.pdf')
+    process_images()
