@@ -14,11 +14,11 @@ def to_png(path):
 
 def process_images():
     reader = easyocr.Reader(['ru', 'en'], gpu=True)
-    with open('output.txt', 'w', encoding='utf-8') as f:
-        sorted_list = sorted(os.listdir('C:/Users/TUF/Desktop/jpg'), key=lambda x: int(x.split('.')[0][4:]))
+    with open('final/ocr_text.txt', 'w', encoding='utf-8') as f:
+        sorted_list = sorted(os.listdir('temp/images'), key=lambda x: int(x.split('.')[0][4:]))
         for filename in sorted_list:
             if filename.endswith('.jpg'):
-                image_path = os.path.join('C:/Users/TUF/Desktop/jpg', filename)
+                image_path = os.path.join('temp/images', filename)
                 result = reader.readtext(image_path, detail=0, paragraph=True)
                 print(image_path)
                 for paragraph in result:
