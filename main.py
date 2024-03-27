@@ -13,9 +13,9 @@ def main(path):
         os.mkdir("temp/apryse_text")
         os.mkdir("temp/ocr_text")
     apryse.convert_to_text(path)
-    easyOCR.to_png(path)
-    easyOCR.process_images()
-    util.final_coupling('final/ocr_text.txt', 'temp/apryse_text')
+    #easyOCR.to_png(path)
+    #easyOCR.process_images()
+    #util.final_coupling('final/ocr_text.txt', 'temp/apryse_text')
     util.clean_after()
 
 
