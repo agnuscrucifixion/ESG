@@ -1,5 +1,7 @@
-import os
 import requests
+import docker
+
+#client = docker.from_env()
 
 
 def main(url, path):
@@ -17,6 +19,9 @@ def main(url, path):
 
 
 if __name__ == '__main__':
+    #image = client.images.pull('agnusdecrucifixion/pdf_converter:prefinal')
+    #container = client.containers.run('agnusdecrucifixion/pdf_converter:prefinal', ports={'5000/tcp': 5000}, detach=True)
+    #print(container.id)
     print("Введите аргумент: ")
     argument = input()
     print("\n")
