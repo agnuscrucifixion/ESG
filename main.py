@@ -12,7 +12,8 @@ def main(url, path):
         with open('final.txt', 'wb') as f:
             f.write(response.content)
             print("Text file downloaded successfully.")
-            return True
+            requests.get("http://localhost:5000/clean")
+            return False
     else:
         print("Failed to download text file.")
         return False
@@ -27,7 +28,7 @@ if __name__ == '__main__':
     print("\n")
     while not main("http://localhost:5000/upload-pdf", argument):
         print("\n")
-        print("Пожалуйста, введите корректный аргумент: ")
+        print("Пожалуйста, введите ешё: ")
         argument = input()
         print("\n")
 
