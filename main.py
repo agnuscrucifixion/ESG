@@ -8,7 +8,7 @@ import re
 
 def correct_path(path):
     directory, filename = os.path.split(path)
-    corrected_filename = re.sub(r'(_\d+)+', '', filename)
+    corrected_filename = re.sub(r'_+', '', filename)
     print(corrected_filename)
     os.rename(path, os.path.join(directory, corrected_filename))
     print(path)
@@ -27,7 +27,6 @@ def main(url, path, ocr):
         path = correct_path(path)
         print("Начинается обработка")
         files = {'file': open(path, 'rb')}
-        print(ocr)
         data = {'ocr': ocr}
         name_pdf = os.path.splitext(os.path.basename(path))[0]
         response = requests.post(url, files=files, data=data)
@@ -56,7 +55,7 @@ if __name__ == '__main__':
     print("Если без OCR не получится, то автоматически начнётся обработка с OCR")
     print("Обработка с OCR может быть хуже")
     print("\n")
-    print("Ввод(1 - 2):")
+    print("Ввод(1 - 2 | Без OCR - OCR):")
     ocr = False
     inpOCR = input()
     if inpOCR == "2":
@@ -66,7 +65,7 @@ if __name__ == '__main__':
         print("Пожалуйста, введите ешё путь: ")
         argument = input()
         print("\n")
-        print("Ввод(1 - 2):")
+        print("Ввод(1 - 2 | Без OCR - OCR):")
         ocr = False
         inpOCR = input()
         if inpOCR == "2":
