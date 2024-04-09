@@ -3,8 +3,6 @@ import docker
 import os
 import re
 
-# client = docker.from_env()
-
 
 def correct_path(path):
     directory, filename = os.path.split(path)
@@ -22,7 +20,6 @@ def before():
 
 def main(url, path, ocr):
     before()
-
     if os.path.exists(path):
         path = correct_path(path)
         print("Начинается обработка")
@@ -45,9 +42,6 @@ def main(url, path, ocr):
 
 
 if __name__ == '__main__':
-    # image = client.images.pull('agnusdecrucifixion/pdf_converter:prefinal')
-    # container = client.containers.run('agnusdecrucifixion/pdf_converter:prefinal', ports={'5000/tcp': 5000}, detach=True)
-    # print(container.id)
     print("Введите аргумент(путь до pdf): ")
     argument = input()
     print("\n")
